@@ -1,5 +1,10 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
+import { Roles } from './auth/decorators/roles.decorator';
+import { GetCurrentUser } from './auth/decorators/current-user.decorator';
+import { Role } from '@prisma/client';
 
 @Controller()
 export class AppController {
@@ -8,5 +13,24 @@ export class AppController {
   @Get()
   getHello(): string {
     return this.appService.getHello();
+  }
+
+  @Get('protected')
+  @UseGuards(JwtAuthGuard)
+  getProtected(@GetCurrentUser() user: any) {
+    return {
+      message: 'This is a protected route',
+      user,
+    };
+  }
+
+  @Get('admin-only')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  getAdminOnly(@GetCurrentUser() user: any) {
+    return {
+      message: 'This is an admin-only route',
+      user,
+    };
   }
 }
