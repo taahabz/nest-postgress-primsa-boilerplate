@@ -1,0 +1,104 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+  # Allows manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+env:
+  APP_NAME: nestjs-api
+  APP_DIR: /home/ubuntu/apps/nestjs-api
+
+jobs:
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test
+
+  deploy:
+    name: 🚀 Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            echo "🚀 Starting deployment..."
+            
+            # Navigate to app directory
+            cd ${{ env.APP_DIR }}
+            
+            # Pull latest changes
+            echo "📥 Pulling latest changes..."
+            git pull origin main
+            
+            # Create/Update .env file from secrets
+            echo "📝 Updating environment variables..."
+            cat > .env << 'EOF'
+            ${{ secrets.ENV_FILE }}
+            EOF
+            
+            # Build and restart containers
+            echo "🐳 Building and restarting containers..."
+            docker compose down
+            docker compose build --no-cache
+            docker compose up -d
+            
+            # Clean up old images
+            echo "🧹 Cleaning up old images..."
+            docker image prune -f
+            
+            # Show container status
+            echo "📊 Container status:"
+            docker compose ps
+            
+            # Wait for health check
+            echo "⏳ Waiting for health check..."
+            sleep 10
+            
+            # Check if container is healthy
+            if docker compose ps | grep -q "healthy"; then
+              echo "✅ Deployment successful!"
+            else
+              echo "⚠️ Container may not be fully healthy yet. Check logs with: docker compose logs"
+            fi
+
+      - name: Deployment Status
+        if: success()
+        run: echo "✅ Deployment completed successfully!"
+
+      - name: Deployment Failed
+        if: failure()
+        run: echo "❌ Deployment failed. Check the logs above."
