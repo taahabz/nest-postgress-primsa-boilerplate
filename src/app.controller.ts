@@ -3,7 +3,10 @@ import { AppService } from './app.service';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { Roles } from './auth/decorators/roles.decorator';
-import { GetCurrentUser } from './auth/decorators/current-user.decorator';
+import {
+  GetCurrentUser,
+  CurrentUser,
+} from './auth/decorators/current-user.decorator';
 import { Role } from '@prisma/client';
 
 @Controller()
@@ -25,7 +28,7 @@ export class AppController {
 
   @Get('protected')
   @UseGuards(JwtAuthGuard)
-  getProtected(@GetCurrentUser() user: any) {
+  getProtected(@GetCurrentUser() user: CurrentUser) {
     return {
       message: 'This is a protected route',
       user,
@@ -35,7 +38,7 @@ export class AppController {
   @Get('admin-only')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  getAdminOnly(@GetCurrentUser() user: any) {
+  getAdminOnly(@GetCurrentUser() user: CurrentUser) {
     return {
       message: 'This is an admin-only route',
       user,
