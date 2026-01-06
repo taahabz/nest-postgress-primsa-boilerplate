@@ -456,53 +456,243 @@ Or simply open the `.pem` file in a text editor and copy the entire contents inc
 
 ### 4.2 Add GitHub Secrets
 
+**Navigate to GitHub Secrets:**
 1. Go to your GitHub repository
-2. Click **Settings** (repository settings, not account settings)
+2. Click **Settings** (repository settings, not your account settings)
 3. In the left sidebar: **Secrets and variables → Actions**
-4. Click **New repository secret**
+4. Click **New repository secret** button
 
 **Add these secrets one by one:**
 
-#### Secret 1: `EC2_HOST`
+---
+
+#### Secret 1: `EC2_HOST` - Your EC2 Server Address
+
+**What is it?**  
+The public IP address or domain name where your EC2 instance can be reached.
+
+**How to get it:**
+
+**Option A: Get Public IPv4 Address (Changes if instance stops/starts)**
+1. Go to AWS Console → **EC2 Dashboard**
+2. Click **Instances** in the left sidebar
+3. Select your NestJS instance
+4. In the **Details** tab below, find **Public IPv4 address**
+5. Copy the IP address (e.g., `54.123.45.67`)
+
+**Option B: Get Elastic IP (Recommended - Permanent address)**
+1. Go to AWS Console → **EC2 Dashboard**
+2. Click **Elastic IPs** in the left sidebar under "Network & Security"
+3. Find the IP associated with your instance
+4. Copy the **Elastic IP address**
+
+**Option C: Use EC2 Public DNS**
+1. In EC2 instance details, find **Public IPv4 DNS**
+2. Copy the DNS name (e.g., `ec2-54-123-45-67.compute-1.amazonaws.com`)
+
+**Add to GitHub:**
 ```
 Name: EC2_HOST
 Value: 54.123.45.67
 ```
-(Use your EC2 Elastic IP or public IP)
+Or:
+```
+Value: ec2-54-123-45-67.compute-1.amazonaws.com
+```
 
-#### Secret 2: `EC2_USERNAME`
+**⚠️ Important:** If you stop and start your EC2 instance, the Public IPv4 address changes. Use an Elastic IP for production!
+
+---
+
+#### Secret 2: `EC2_USERNAME` - SSH Login Username
+
+**What is it?**  
+The username used to connect to your EC2 instance via SSH.
+
+**How to get it:**
+
+The username depends on your AMI (Operating System):
+
+| AMI Type | Username |
+|----------|----------|
+| Ubuntu | `ubuntu` |
+| Amazon Linux 2 | `ec2-user` |
+| RHEL | `ec2-user` |
+| Debian | `admin` |
+| SUSE | `ec2-user` |
+
+**For this guide (Ubuntu 22.04):**
 ```
 Name: EC2_USERNAME
 Value: ubuntu
 ```
 
-#### Secret 3: `EC2_SSH_KEY`
+**How to verify (if unsure):**
+```bash
+# Check your successful SSH command
+ssh -i your-key.pem ubuntu@YOUR_IP    # If this works, username is 'ubuntu'
+ssh -i your-key.pem ec2-user@YOUR_IP  # If this works, username is 'ec2-user'
+```
+
+---
+
+#### Secret 3: `EC2_SSH_KEY` - Your Private SSH Key
+
+**What is it?**  
+The private key file (`.pem`) you downloaded when creating the EC2 instance. This authenticates GitHub Actions to connect to your server.
+
+**How to get it:**
+
+**If you still have the `.pem` file:**
+
+**On Windows:**
+1. Locate your key file (e.g., `C:\Users\YourName\Downloads\nestjs-server-key.pem`)
+2. Open in Notepad or VS Code
+3. Copy the **entire contents** including the header and footer
+
+**On Mac/Linux:**
+```bash
+# Display and copy the key
+cat ~/Downloads/nestjs-server-key.pem
+
+# Or copy to clipboard directly
+cat ~/Downloads/nestjs-server-key.pem | pbcopy    # Mac
+cat ~/Downloads/nestjs-server-key.pem | xclip     # Linux
+```
+
+**The value should look like this:**
+```
+-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEAm1jX2xYQRqn8/qLHKn123...
+(many lines of random characters)
+...7Xp2K9vN+Qw8xYz1==
+-----END RSA PRIVATE KEY-----
+```
+
+**Add to GitHub:**
 ```
 Name: EC2_SSH_KEY
-Value: [Paste entire contents of your .pem file]
+Value: [Paste the entire key including BEGIN and END lines]
 ```
 
-#### Secret 4: `ENV_FILE`
-```
-Name: ENV_FILE
-Value: [Paste your entire .env file contents]
+**⚠️ Critical Requirements:**
+- Must include `-----BEGIN RSA PRIVATE KEY-----` line
+- Must include `-----END RSA PRIVATE KEY-----` line
+- No extra spaces or line breaks at start/end
+- Keep this secret SAFE - it's like a password to your server
+
+**If you lost the `.pem` file:**
+1. You cannot retrieve it from AWS
+2. You must create a new key pair:
+   - EC2 Console → Key Pairs → Create key pair
+   - Stop your instance → Actions → Security → Modify instance attribute → Change key pair
+   - Or create a new instance with the new key
+
+---
+
+#### Secret 4: `ENV_FILE` - Production Environment Variables
+
+**What is it?**  
+All environment variables your NestJS application needs to run in production.
+
+**How to get it:**
+
+**Step 1: Get your DATABASE_URL from NeonDB**
+
+1. Go to **Neon Console** → https://console.neon.tech/
+2. Select your project
+3. Click **Connection Details** or **Dashboard**
+4. Copy the **Connection string** (it will look like):
+   ```
+   postgresql://user:password@ep-cool-wing-123456.us-east-2.aws.neon.tech/neondb?sslmode=require
+   ```
+
+**Step 2: Generate a secure JWT_SECRET**
+
+**On Windows PowerShell:**
+```powershell
+# Generate 32-byte random string
+-join ((65..90) + (97..122) + (48..57) | Get-Random -Count 32 | % {[char]$_})
 ```
 
-Example ENV_FILE value:
+**On Mac/Linux:**
+```bash
+# Generate 32-byte base64 random string
+openssl rand -base64 32
 ```
-DATABASE_URL="postgresql://user:pass@host/db?sslmode=require"
-JWT_SECRET="your-super-secure-jwt-secret-min-32-chars"
+
+**Or use online generator:**
+- https://generate-secret.vercel.app/32
+- https://randomkeygen.com/
+
+Copy the generated string (e.g., `x8K3nQ2vR9mL4pT7wY1sZ6dF5jH8kM0nP3qC4tX7uV2w`)
+
+**Step 3: Assemble your ENV_FILE value**
+
+Create a text file with these variables:
+```env
+# Database Configuration
+DATABASE_URL="postgresql://username:password@ep-cool-wing-123456.us-east-2.aws.neon.tech/neondb?sslmode=require"
+
+# JWT Authentication
+JWT_SECRET="x8K3nQ2vR9mL4pT7wY1sZ6dF5jH8kM0nP3qC4tX7uV2w"
 JWT_EXPIRES_IN="15m"
+
+# Application Settings
 NODE_ENV="production"
 PORT="3001"
 ```
 
+**Add to GitHub:**
+```
+Name: ENV_FILE
+Value: [Paste the entire content above with YOUR actual values]
+```
+
+**⚠️ Security Tips:**
+- Never use the same JWT_SECRET across environments (dev/staging/prod)
+- Make JWT_SECRET at least 32 characters long
+- Don't commit this to Git
+- Rotate secrets periodically (every 90 days)
+
+**Optional variables you might add:**
+```env
+# If using external services
+SENTRY_DSN="https://your-sentry-dsn..."
+REDIS_URL="redis://localhost:6379"
+AWS_ACCESS_KEY_ID="your-aws-key"
+AWS_SECRET_ACCESS_KEY="your-aws-secret"
+
+# Email service
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+```
+
+---
+
 #### Secret 5 (Optional): `NEON_DATABASE_URL`
-If you want to run Prisma migrations from GitHub Actions:
-```
-Name: NEON_DATABASE_URL
-Value: [Your NeonDB connection string]
-```
+
+**What is it?**  
+A duplicate of your DATABASE_URL, used if you want GitHub Actions to run Prisma migrations during deployment.
+
+**How to get it:**  
+This is the **same value** as the DATABASE_URL in your ENV_FILE.
+
+**When to use it:**
+- ✅ If you want automatic migrations on deployment
+- ❌ Skip if you prefer manual migrations via SSH
+
+**How to get it:**
+1. Copy your NeonDB connection string (same as Step 1 in ENV_FILE above)
+2. Add to GitHub:
+   ```
+   Name: NEON_DATABASE_URL
+   Value: postgresql://username:password@ep-cool-wing-123456.us-east-2.aws.neon.tech/neondb?sslmode=require
+   ```
+
+**⚠️ Note:** This is currently **not used** in your workflow file, but you can add a migration step if needed.
 
 ### 4.3 Verify Secrets
 

@@ -5,7 +5,7 @@ import { RolesGuard } from './auth/guards/roles.guard';
 import { Roles } from './auth/decorators/roles.decorator';
 import {
   GetCurrentUser,
-  CurrentUser,
+  type CurrentUser,
 } from './auth/decorators/current-user.decorator';
 import { Role } from '@prisma/client';
 

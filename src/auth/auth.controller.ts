@@ -5,7 +5,7 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import {
   GetCurrentUser,
-  CurrentUser,
+  type CurrentUser,
 } from './decorators/current-user.decorator';
 
 @Controller('auth')
