@@ -1,9 +1,37 @@
 # NestJS API with Role-Based Access Control (RBAC)
 
+> **🎯 Production-Ready Template** | Use this as a boilerplate for your next NestJS project with built-in authentication, RBAC, and automated CI/CD deployment to AWS EC2.
+
 A production-ready REST API built with **NestJS**, **Prisma ORM**, and **PostgreSQL** featuring JWT authentication and role-based access control (RBAC). Designed for mobile and desktop applications with enterprise-grade security patterns.
+
+## 🚀 Quick Start with This Template
+
+**Option 1: Use as GitHub Template**
+1. Click "Use this template" button on GitHub
+2. Create your new repository
+3. Clone and follow the [Getting Started](#getting-started) section
+
+**Option 2: Clone Directly**
+```bash
+git clone https://github.com/taahabz/nest-postgress-primsa-boilerplate.git my-project
+cd my-project
+rm -rf .git  # Remove template git history
+git init     # Start fresh
+```
+
+**What's Included:**
+- ✅ Complete authentication system (JWT + bcrypt)
+- ✅ Role-based access control (USER/ADMIN)
+- ✅ Prisma ORM with PostgreSQL
+- ✅ Docker & Docker Compose setup
+- ✅ GitHub Actions CI/CD pipeline
+- ✅ AWS EC2 deployment configuration
+- ✅ Nginx reverse proxy setup
+- ✅ Comprehensive documentation
 
 ## 📋 Table of Contents
 
+- [Quick Start with This Template](#-quick-start-with-this-template)
 - [Overview](#overview)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
@@ -17,6 +45,7 @@ A production-ready REST API built with **NestJS**, **Prisma ORM**, and **Postgre
 - [Database Schema](#database-schema)
 - [Testing](#testing)
 - [Deployment](#deployment)
+- [Using as Template](#using-as-template)
 - [Architecture Decisions](#architecture-decisions)
 
 ---
@@ -571,8 +600,52 @@ npm run start:prod
 
 ### Recommended Platforms
 
-- **Backend**: Railway, Render, AWS Elastic Beanstalk, DigitalOcean
+- **Backend**: Railway, Render, AWS Elastic Beanstalk, DigitalOcean, AWS EC2
 - **Database**: Neon, Supabase, AWS RDS, Railway Postgres
+
+**Included Deployment:**
+This template comes with a complete AWS EC2 deployment setup via GitHub Actions. See [docs/COMPLETE_DEPLOYMENT_GUIDE.md](docs/COMPLETE_DEPLOYMENT_GUIDE.md) for full automated deployment instructions.
+
+---
+
+## 📦 Using as Template
+
+This repository is designed to be used as a **production-ready boilerplate** for your NestJS projects.
+
+### Quick Template Setup
+
+**Option 1: GitHub Template (Recommended)**
+1. Click "Use this template" on GitHub
+2. Create your new repository
+3. Clone and customize for your project
+
+**Option 2: Manual Clone**
+```bash
+git clone https://github.com/taahabz/nest-postgress-primsa-boilerplate.git my-project
+cd my-project
+rm -rf .git && git init
+```
+
+### Customization Guide
+
+See [TEMPLATE_USAGE.md](TEMPLATE_USAGE.md) for detailed instructions on:
+- ✅ Customizing package.json and project metadata
+- ✅ Modifying database schema
+- ✅ Adding new endpoints and modules
+- ✅ Configuring deployment for your project
+- ✅ Extending authentication and authorization
+- ✅ Best practices and common modifications
+
+### What You Get
+
+- 🔐 Complete authentication system (JWT + bcrypt)
+- 🛡️ Role-based access control (USER/ADMIN)
+- 🗄️ Prisma ORM with PostgreSQL
+- 🐳 Docker & Docker Compose setup
+- 🚀 GitHub Actions CI/CD pipeline
+- ☁️ AWS EC2 deployment configuration
+- 📝 Comprehensive documentation
+- ✅ Production-ready security features
 
 ---
 
@@ -611,8 +684,57 @@ npm run start:prod
 - [Passport JWT Strategy](http://www.passportjs.org/packages/passport-jwt/)
 - [class-validator](https://github.com/typestack/class-validator)
 - [Helmet.js](https://helmetjs.github.io/)
+- [AWS EC2 Documentation](https://docs.aws.amazon.com/ec2/)
+- [Docker Documentation](https://docs.docker.com)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
 
 ---
 
-**Built with ❤️ using NestJS, Prisma, and PostgreSQL**
+## 📄 Documentation
+
+- **[TEMPLATE_USAGE.md](TEMPLATE_USAGE.md)** - Complete guide for using this as a template
+- **[COMPLETE_DEPLOYMENT_GUIDE.md](docs/COMPLETE_DEPLOYMENT_GUIDE.md)** - Step-by-step AWS EC2 deployment
+- **[DEPLOYMENT_CHECKLIST.md](docs/DEPLOYMENT_CHECKLIST.md)** - Quick verification checklist
+- **[REVIEW_SUMMARY.md](docs/REVIEW_SUMMARY.md)** - Architecture review and fixes
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! If you have improvements for this template:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📝 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+## 🌟 Show Your Support
+
+If this template helped you build your project:
+- ⭐ Star this repository
+- 🍴 Fork it for your own use
+- 📣 Share it with others
+- 💬 Provide feedback through issues
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with [NestJS](https://nestjs.com/) - A progressive Node.js framework
+- Database powered by [Prisma](https://www.prisma.io/) - Next-generation ORM
+- Deployed on [AWS EC2](https://aws.amazon.com/ec2/) with [GitHub Actions](https://github.com/features/actions)
+
+---
+
+**Built with ❤️ using NestJS, Prisma, and PostgreSQL** | **Production-Ready Template** 🚀
+
 

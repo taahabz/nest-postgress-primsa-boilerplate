@@ -1,6 +1,15 @@
 # 🚀 Quick Deployment Checklist
 
+> **📋 For Template Users** | This checklist covers deploying the NestJS RBAC boilerplate template to AWS EC2. If you're using this template for your project, simply follow each step in order.
+
 Use this checklist to ensure you've completed all steps correctly.
+
+## 📌 Before You Start
+
+- [ ] You've cloned or forked this template repository
+- [ ] You have an AWS account ready
+- [ ] You have a NeonDB or PostgreSQL database (or plan to create one)
+- [ ] You have 30-60 minutes available for setup
 
 ---
 

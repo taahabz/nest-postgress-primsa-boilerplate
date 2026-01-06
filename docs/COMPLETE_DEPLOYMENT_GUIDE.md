@@ -1,6 +1,23 @@
 # 🚀 Complete Deployment Guide - NestJS to AWS EC2
 
+> **📝 Template Repository Guide** | This guide is designed for deploying the NestJS RBAC boilerplate or any project based on it to AWS EC2 with automated GitHub Actions CI/CD.
+
 This is your comprehensive end-to-end guide to deploy your NestJS application with PostgreSQL (NeonDB) to AWS EC2 using GitHub Actions.
+
+## 🎯 Using This Guide with the Template
+
+This deployment guide is specifically designed for this NestJS boilerplate template. Whether you're deploying the template as-is or your own project built from it:
+
+**For Template Users:**
+- All configurations are pre-setup and tested
+- GitHub Actions workflow is ready to use
+- Just follow the guide to configure AWS and secrets
+- Estimated time: 30-45 minutes for first deployment
+
+**For Custom Projects:**
+- Use this as a reference for your own deployment
+- Adapt the workflow file to your needs
+- Follow the same security and best practices
 
 ---
 
