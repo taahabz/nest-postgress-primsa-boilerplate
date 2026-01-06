@@ -26,6 +26,17 @@ export class AppController {
     };
   }
 
+  @Get('test-deployment')
+  testDeployment() {
+    return {
+      message: '🚀 Deployment successful!',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      deployedBy: 'GitHub Actions CI/CD Pipeline',
+    };
+  }
+
   @Get('protected')
   @UseGuards(JwtAuthGuard)
   getProtected(@GetCurrentUser() user: CurrentUser) {
