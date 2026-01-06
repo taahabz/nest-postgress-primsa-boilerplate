@@ -10,6 +10,7 @@ on:
 env:
   APP_NAME: nestjs-api
   APP_DIR: /home/ubuntu/apps/nestjs-api
+  DOCKER_COMPOSE_VERSION: "2.24.0"
 
 jobs:
   test:
@@ -55,14 +56,21 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
+            set -e  # Exit on any error
+            
             echo "🚀 Starting deployment..."
+            echo "Timestamp: $(date)"
             
             # Navigate to app directory
             cd ${{ env.APP_DIR }}
             
+            # Stash any local changes (if any)
+            git stash || true
+            
             # Pull latest changes
-            echo "📥 Pulling latest changes..."
-            git pull origin main
+            echo "📥 Pulling latest changes from main..."
+            git fetch origin main
+            git reset --hard origin/main
             
             # Create/Update .env file from secrets
             echo "📝 Updating environment variables..."
@@ -70,30 +78,92 @@ jobs:
             ${{ secrets.ENV_FILE }}
             EOF
             
-            # Build and restart containers
-            echo "🐳 Building and restarting containers..."
+            # Validate .env file was created
+            if [ ! -f .env ]; then
+              echo "❌ Error: .env file was not created!"
+              exit 1
+            fi
+            
+            echo "✅ Environment file updated"
+            
+            # Backup current container (in case of rollback)
+            echo "💾 Creating backup of current deployment..."
+            BACKUP_IMAGE="nestjs-api-backup-$(date +%Y%m%d-%H%M%S)"
+            docker tag nestjs-api:latest "$BACKUP_IMAGE" 2>/dev/null || echo "No previous image to backup"
+            
+            # Stop current containers
+            echo "🛑 Stopping current containers..."
             docker compose down
+            
+            # Build new image
+            echo "🔨 Building new Docker image..."
             docker compose build --no-cache
+            
+            # Start containers
+            echo "🚀 Starting containers..."
             docker compose up -d
             
-            # Clean up old images
+            # Wait for container to start
+            echo "⏳ Waiting for container to initialize..."
+            sleep 15
+            
+            # Check if container is running
+            if ! docker compose ps | grep -q "Up"; then
+              echo "❌ Container failed to start!"
+              echo "📋 Container logs:"
+              docker compose logs --tail=50
+              exit 1
+            fi
+            
+            # Health check with retries
+            echo "🏥 Running health checks..."
+            MAX_RETRIES=12
+            RETRY_COUNT=0
+            HEALTH_CHECK_URL="http://localhost:3001/api/health"
+            
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+              if curl -f -s "$HEALTH_CHECK_URL" > /dev/null 2>&1; then
+                echo "✅ Health check passed!"
+                HEALTH_RESPONSE=$(curl -s "$HEALTH_CHECK_URL")
+                echo "Health check response: $HEALTH_RESPONSE"
+                break
+              else
+                RETRY_COUNT=$((RETRY_COUNT + 1))
+                echo "⏳ Health check attempt $RETRY_COUNT/$MAX_RETRIES failed, waiting 5s..."
+                sleep 5
+              fi
+            done
+            
+            if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+              echo "❌ Health check failed after $MAX_RETRIES attempts!"
+              echo "📋 Container logs:"
+              docker compose logs --tail=100
+              echo "🔄 Rolling back to previous version..."
+              docker compose down
+              if docker images | grep -q "$BACKUP_IMAGE"; then
+                docker tag "$BACKUP_IMAGE" nestjs-api:latest
+                docker compose up -d
+              fi
+              exit 1
+            fi
+            
+            # Clean up old images (keep last 3)
             echo "🧹 Cleaning up old images..."
             docker image prune -f
+            
+            # Clean up old backup images (keep last 3)
+            docker images | grep nestjs-api-backup | awk '{print $3}' | tail -n +4 | xargs -r docker rmi -f 2>/dev/null || true
             
             # Show container status
             echo "📊 Container status:"
             docker compose ps
             
-            # Wait for health check
-            echo "⏳ Waiting for health check..."
-            sleep 10
+            # Show resource usage
+            echo "💻 Resource usage:"
+            docker stats --no-stream
             
-            # Check if container is healthy
-            if docker compose ps | grep -q "healthy"; then
-              echo "✅ Deployment successful!"
-            else
-              echo "⚠️ Container may not be fully healthy yet. Check logs with: docker compose logs"
-            fi
+            echo "✅ Deployment completed successfully!"
+            echo "🎉 Application is running at http://${{ secrets.EC2_HOST }}/api"
 
       - name: Deployment Status
         if: success()

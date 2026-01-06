@@ -494,7 +494,6 @@ curl -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@test.com","password":"admin123","role":"ADMIN"}'
 ```
-You can always disable this api later on or can manually inject data in db, since this route must not be exposed
 
 **3. Login**
 ```bash
