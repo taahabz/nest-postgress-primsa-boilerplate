@@ -9,7 +9,7 @@ on:
 
 env:
   APP_NAME: nestjs-api
-  APP_DIR: /home/ubuntu/apps/nestjs-api
+  APP_DIR: /home/${{ secrets.EC2_USERNAME }}/apps/nestjs-api
   DOCKER_COMPOSE_VERSION: "2.24.0"
 
 jobs:
